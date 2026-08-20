@@ -80,6 +80,13 @@ Podpowiadanie w **fish** dziala od razu — nazwy maszyn i systemow tez.
 
 **Bezpieczenstwo:** `kali`
 
+**Dziwne i memowe** (do odcinka o najdziwniejszych systemach):
+`nyarch` `amogos` `hannah-montana` `satanic` `christian` `linuxbbq`
+`rebeccablackos` `kolibri` `redstar` `wubuntu`
+
+Stare 32-bitowe (Hannah Montana, Satanic, Christian, KolibriOS, LinuxBBQ, RedStar)
+dostaja automatycznie BIOS zamiast UEFI, bo z UEFI w ogole nie wstaja.
+
 **Wlasne ISO:** `windows` (Microsoft nie daje stalego linku)
 
 Nie ma tu zadnych linkow z wpisanym na sztywno numerem wersji — program wchodzi

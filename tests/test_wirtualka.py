@@ -195,6 +195,14 @@ class Catalog(unittest.TestCase):
             if source["type"] != "manual":
                 self.assertTrue(source.get("url", "").startswith("https://"), distro.slug)
 
+    def test_old_systems_get_bios(self):
+        for slug in ("hannah-montana", "satanic", "christian", "kolibri", "redstar"):
+            made = config.VmConfig.new("test", catalog.get(slug))
+            self.assertEqual(made.firmware, "bios", slug)
+
+    def test_modern_systems_keep_uefi(self):
+        self.assertEqual(config.VmConfig.new("test", catalog.get("arch")).firmware, "uefi")
+
     def test_sourceforge_name(self):
         url = "https://sourceforge.net/projects/nyarchlinux/files/Nyarch-Gnome-26.04.iso/download"
         self.assertEqual(iso.path_for(url).name, "Nyarch-Gnome-26.04.iso")

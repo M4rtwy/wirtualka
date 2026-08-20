@@ -122,6 +122,9 @@ class VmConfig:
             config.distro = distro.slug
             config.ram_mb = parse_size_mb(distro.ram)
             config.disk_mb = parse_size_mb(distro.disk)
+            # stare 32-bitowe systemy nie ruszaja z UEFI
+            if distro.bios:
+                config.firmware = "bios"
         return config
 
 

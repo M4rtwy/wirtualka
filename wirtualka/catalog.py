@@ -19,6 +19,7 @@ class Distro:
     ram: str = "4G"
     disk: str = "40G"
     note: str = ""
+    bios: bool = False
 
     @property
     def manual(self):
@@ -210,6 +211,53 @@ CATALOG = (
         "url": "https://cdimage.kali.org/current/",
         "pattern": r"kali-linux-[\w.]+-installer-amd64\.iso",
     }, ram="4G", disk="40G"),
+    Distro("amogos", "AmogOS", {
+        "type": "direct",
+        "url": "https://archive.org/download/amogos-x64/AmogOS-1.4.0-x86_64.iso",
+    }, ram="2G", disk="20G", note="Debian zrobiony z mema o Among Us"),
+    Distro("hannah-montana", "Hannah Montana Linux", {
+        "type": "direct",
+        "url": "https://archive.org/download/hannah_montana_linux_x86_basic_edition_202104"
+               "/hannah_montana_linux_x86_basic_edition.iso",
+    }, ram="1G", disk="15G", note="Kubuntu z 2009, cale na fioletowo", bios=True),
+    Distro("satanic", "Ubuntu Satanic Edition", {
+        "type": "direct",
+        "url": "https://archive.org/download/UbuntuSatanicEdition"
+               "/ubuntu-satanic-edition-666.10-i386.iso",
+    }, ram="1G", disk="15G", note="czerwien i metal", bios=True),
+    Distro("christian", "Ubuntu Christian Edition", {
+        "type": "direct",
+        "url": "https://archive.org/download/ubuntuce/Ubuntu_7.04_i386_Christian_Edition_v3_0.iso",
+    }, ram="1G", disk="15G", note="Biblia i filtr rodzicielski w komplecie", bios=True),
+    Distro("linuxbbq", "LinuxBBQ", {
+        "type": "direct",
+        "url": "https://sourceforge.net/projects/linuxbbq/files/adipositas/"
+               "linuxbbq-adipositas-20160720.iso/download",
+    }, ram="1G", disk="15G", note="wydania nazywaja sie Weird Chicken i Crunchy Bacon",
+       bios=True),
+    Distro("rebeccablackos", "Rebecca Black OS", {
+        "type": "rss",
+        "url": "https://sourceforge.net/projects/rebeccablackos/rss?path=/",
+        "pattern": r"https://sourceforge\.net/projects/rebeccablackos/files/[^<]*"
+                   r"RebeccaBlackOS_amd64\.iso/download",
+    }, ram="2G", disk="25G", note="glupia nazwa, a mial Waylanda przed wszystkimi"),
+    Distro("kolibri", "KolibriOS", {
+        "type": "direct",
+        "url": "https://archive.org/download/kolibrios-0.7.7.0-9108-g13a9b877f-en_US"
+               "/kolibrios-0.7.7.0-9108-g13a9b877f-en_US.iso",
+    }, ram="512M", disk="2G", note="caly w asemblerze, wstaje w dwie sekundy", bios=True),
+    Distro("redstar", "Red Star OS 3.0", {
+        "type": "direct",
+        "url": "https://archive.org/download/redstar_desktop3.0_sign_202212"
+               "/redstar_desktop3.0_sign.iso",
+    }, ram="2G", disk="25G",
+       note="system Korei Polnocnej - znakuje kazdy otwarty plik, odpalaj bez sieci",
+       bios=True),
+    Distro("wubuntu", "Wubuntu / Winux", {
+        "type": "direct",
+        "url": "https://archive.org/download/wubuntu-10-11-is-col-all"
+               "/windows-ubuntu-11.4.0-win11-plasma-amd64.iso",
+    }, ram="4G", disk="40G", note="Ubuntu przebrane za Windowsa, chce klucz produktu"),
     Distro("windows", "Windows 11", {
         "type": "manual",
         "info": "Microsoft nie daje stalego linku. Pobierz ISO ze strony microsoft.com "
