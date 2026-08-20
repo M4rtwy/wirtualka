@@ -8,7 +8,7 @@ TMP = tempfile.mkdtemp(prefix="wirtualka-test-")
 os.environ["WIRTUALKA_HOME"] = TMP
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from wirtualka import catalog, config, qemu, store, templates  # noqa: E402
+from wirtualka import catalog, config, iso, qemu, store, templates  # noqa: E402
 from wirtualka.errors import AlreadyExists, NotFound, BladWirtualki  # noqa: E402
 from wirtualka.util import format_size_mb, parse_port, parse_size_mb  # noqa: E402
 
@@ -185,6 +185,16 @@ class Catalog(unittest.TestCase):
     def test_unknown(self):
         with self.assertRaises(NotFound):
             catalog.get("temple-os")
+
+    def test_sourceforge_name(self):
+        url = "https://sourceforge.net/projects/nyarchlinux/files/Nyarch-Gnome-26.04.iso/download"
+        self.assertEqual(iso.path_for(url).name, "Nyarch-Gnome-26.04.iso")
+
+    def test_plain_name(self):
+        self.assertEqual(
+            iso.path_for("https://example.org/iso/latest/archlinux-x86_64.iso").name,
+            "archlinux-x86_64.iso",
+        )
 
     def test_newest_wins(self):
         page = "linuxmint-22-cinnamon-64bit.iso linuxmint-22.3-cinnamon-64bit.iso"

@@ -21,7 +21,9 @@ def cached():
 
 
 def path_for(url):
-    name = Path(urllib.parse.urlparse(url).path).name
+    parts = [part for part in urllib.parse.urlparse(url).path.split("/") if part]
+    # sourceforge links end in /download, the name sits one segment earlier
+    name = parts[-2] if parts and parts[-1] == "download" else parts[-1]
     return ISO_DIR / name
 
 

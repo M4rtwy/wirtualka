@@ -71,6 +71,7 @@ Podpowiadanie w **fish** dziala od razu — nazwy maszyn i systemow tez.
 
 `cachyos` `cachyos-kde` `cachyos-cli` `cachyos-handheld` `arch` `debian` `fedora`
 `ubuntu` `mint` `nixos` `opensuse` `alpine` `gentoo` `gentoo-gui` `kali`
+`nyarch` `nyarch-kde` (ten memowy Arch dla weeaboo)
 oraz `windows` (tu musisz dac wlasne ISO, Microsoft nie daje stalego linku).
 
 Nie ma tu zadnych linkow z wpisanym na sztywno numerem wersji — program wchodzi

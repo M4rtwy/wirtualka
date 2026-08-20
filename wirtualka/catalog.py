@@ -100,6 +100,18 @@ CATALOG = (
         "url": "https://distfiles.gentoo.org/releases/amd64/autobuilds/current-livegui-amd64/",
         "pattern": r"livegui-amd64-[\dTZ]+\.iso",
     }, ram="6G", disk="60G"),
+    Distro("nyarch", "Nyarch Linux (GNOME)", {
+        "type": "index",
+        "url": "https://sourceforge.net/projects/nyarchlinux/files/",
+        "pattern": r"Nyarch-Gnome-[\d.]+\.iso",
+        "suffix": "/download",
+    }, ram="6G", disk="50G", note="Arch dla weeaboo"),
+    Distro("nyarch-kde", "Nyarch Linux (KDE)", {
+        "type": "index",
+        "url": "https://sourceforge.net/projects/nyarchlinux/files/",
+        "pattern": r"Nyarch-KDE-[\d.]+\.iso",
+        "suffix": "/download",
+    }, ram="6G", disk="50G", note="Arch dla weeaboo"),
     Distro("kali", "Kali Linux", {
         "type": "index",
         "url": "https://cdimage.kali.org/current/",
@@ -153,4 +165,4 @@ def resolve(distro):
         base += _newest(_fetch(base), source["dir_pattern"])
     if source.get("subpath"):
         base += source["subpath"]
-    return base + _newest(_fetch(base), source["pattern"])
+    return base + _newest(_fetch(base), source["pattern"]) + source.get("suffix", "")
