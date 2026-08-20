@@ -6,11 +6,12 @@ import re
 import shlex
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 from . import catalog, disk, iso, qemu, run, store, templates
 from .config import VmConfig
-from .constants import ISO_DIR, MACHINES_DIR, ROOT
+from .constants import ISO_DIR, MACHINES_DIR, QEMU, ROOT
 from .errors import BladWirtualki
 from .util import format_size_mb, human_bytes, parse_port, parse_size_mb
 
@@ -54,13 +55,14 @@ def tag_for(path):
 
 def apply_flags(config, args):
     simple = ("cpus", "cpu_model", "machine", "bus", "display", "gpu", "vram",
-              "resolution", "mac", "net", "firmware")
+              "resolution", "mac", "net", "firmware", "pin", "keyboard", "rtc",
+              "sound_model", "dns", "hostname", "note")
     for key in simple:
         value = getattr(args, key, None)
         if value is not None:
             setattr(config, key, value)
     for key in ("audio", "clipboard", "kvm", "balloon", "discard", "accel3d",
-                "secureboot", "tpm"):
+                "secureboot", "tpm", "temporary", "fast_disk", "nested", "fit"):
         value = getattr(args, key, None)
         if value is not None:
             setattr(config, key, value)
@@ -69,6 +71,14 @@ def apply_flags(config, args):
         config.ram_mb = parse_size_mb(args.ram)
     if args.vnc is not None:
         config.vnc = args.vnc
+    if args.nice is not None:
+        config.nice = args.nice
+    if args.screens is not None:
+        config.screens = args.screens
+    for item in args.port_udp:
+        pair = list(parse_port(item))
+        if pair not in config.ports_udp:
+            config.ports_udp.append(pair)
     if args.no_internet:
         config.net = "none"
     if args.headless:
@@ -247,6 +257,114 @@ def _prepare_nvram(machine):
         machine.nvram.write_bytes(OVMF_VARS.read_bytes())
 
 
+def cmd_doctor(args):
+    import shutil as _shutil
+    from .constants import OVMF_CODE
+
+    checks = []
+    virt = any(flag in open("/proc/cpuinfo").read() for flag in ("vmx", "svm"))
+    checks.append((virt, "procesor umie wirtualizacje",
+                   "wlacz VT-x/AMD-V w BIOSie"))
+    checks.append((os.access("/dev/kvm", os.R_OK | os.W_OK), "mam dostep do /dev/kvm",
+                   "dopisz sie do grupy kvm albo uzywaj --no-kvm"))
+    checks.append((bool(_shutil.which(QEMU)), "qemu jest zainstalowane",
+                   "doinstaluj qemu-desktop"))
+    checks.append((OVMF_CODE.exists(), "firmware UEFI jest",
+                   "doinstaluj edk2-ovmf albo uzywaj --bios"))
+    checks.append((bool(_shutil.which("swtpm")), "swtpm jest (potrzebny do Windowsa 11)",
+                   "doinstaluj swtpm, jesli chcesz Windowsa 11"))
+    free = os.statvfs(str(ROOT.parent))
+    gigabytes = free.f_bavail * free.f_frsize / (1024 ** 3)
+    checks.append((gigabytes > 20, f"wolnego miejsca: {gigabytes:.0f} GB",
+                   "zrob miejsce, maszyny lubia dysk"))
+
+    for good, label, hint in checks:
+        print(f"  {'[ok] ' if good else '[!!] '}{label}")
+        if not good:
+            print(f"        -> {hint}")
+    return 0 if all(good for good, _, _ in checks) else 1
+
+
+def cmd_all_stop(args):
+    stopped = 0
+    for machine in store.all_machines():
+        if run.is_running(machine):
+            run.stop(machine)
+            say(args, f"{machine.name} zatrzymana")
+            stopped += 1
+    if not stopped:
+        say(args, "nic nie chodzilo")
+    return 0
+
+
+def cmd_running(args):
+    machines = run.running_machines(store.all_machines())
+    if not machines:
+        print("nic nie chodzi")
+        return 0
+    for machine in machines:
+        print(f"{machine.name:16} pid {run.pid_of(machine):<8} "
+              f"{run.rss_mb(machine)}M ramu, {run.uptime(machine) // 60} min")
+    return 0
+
+
+def cmd_export(args, machine):
+    import tarfile
+
+    if run.is_running(machine):
+        raise BladWirtualki("najpierw zatrzymaj maszyne")
+    target = Path(args.export).expanduser()
+    with tarfile.open(target, "w:gz") as archive:
+        archive.add(machine.path, arcname=machine.name)
+    say(args, f"spakowane: {target} ({human_bytes(target.stat().st_size)})")
+    return 0
+
+
+def cmd_import(args):
+    import tarfile
+
+    source = Path(args.import_file).expanduser()
+    if not source.is_file():
+        raise BladWirtualki(f"nie ma pliku {source}")
+    store.ensure_root()
+    with tarfile.open(source) as archive:
+        names = {Path(item.name).parts[0] for item in archive.getmembers() if item.name}
+        if len(names) != 1:
+            raise BladWirtualki("to nie wyglada na spakowana maszyne")
+        name = names.pop()
+        if store.exists(name):
+            raise BladWirtualki(f"maszyna '{name}' juz jest")
+        archive.extractall(MACHINES_DIR, filter="data")
+    machine = store.load(name)
+    machine.config.name = name
+    machine.save()
+    say(args, f"wypakowane: {name}")
+    return 0
+
+
+def cmd_ssh(args, machine):
+    port = next((host for host, guest in machine.config.ports if guest == 22), None)
+    if not port:
+        raise BladWirtualki(f"brak przekierowania na ssh - zrob: "
+                            f"wirtualka {machine.name} --ssh")
+    user = os.environ.get("USER", "root")
+    return subprocess.call(["ssh", "-p", str(port), f"{user}@127.0.0.1"])
+
+
+def cmd_screenshot(args, machine):
+    if not run.is_running(machine):
+        raise BladWirtualki("maszyna stoi, nie ma czego fotografowac")
+    if isinstance(args.screenshot, str):
+        target = Path(args.screenshot).expanduser()
+    else:
+        folder = Path.home() / "Obrazy"
+        folder = folder if folder.is_dir() else Path.cwd()
+        target = folder / f"{machine.name}-{int(time.time())}.png"
+    saved = run.screenshot(machine, target)
+    say(args, f"zrzut: {saved}")
+    return 0
+
+
 def cmd_start(args, machine, media=None):
     media = media if media is not None else resolve_iso(args, machine.config, args.quiet)
     if args.no_iso:
@@ -254,15 +372,23 @@ def cmd_start(args, machine, media=None):
     if machine.config.firmware == "uefi":
         _prepare_nvram(machine)
     if args.dry_run:
-        print(shlex.join(qemu.build(machine, iso=media)))
+        print(shlex.join(run.prefix(machine.config)
+                         + qemu.build(machine, iso=media, console=args.console,
+                                      fullscreen=args.fullscreen)))
         return 0
 
-    pid = run.start(machine, iso=media, foreground=args.fg)
+    pid = run.start(machine, iso=media, foreground=args.fg, console=args.console,
+                    fullscreen=args.fullscreen)
+    if args.console:
+        return pid
     remember(machine.name)
     if not args.fg:
         say(args, f"{machine.name} chodzi (pid {pid})")
         if media:
             say(args, f"po instalacji odpalaj tak: wirtualka {machine.name} --no-iso")
+    if args.wait:
+        run.wait_until_off(machine)
+        say(args, f"{machine.name} sie wylaczyla")
     return 0
 
 
@@ -308,6 +434,9 @@ def cmd_snapshots(args, machine):
 
 
 GLOBAL = {
+    "doctor": cmd_doctor,
+    "all_stop": cmd_all_stop,
+    "running": cmd_running,
     "list": cmd_list,
     "iso_list": cmd_iso_list,
     "iso_cache": cmd_iso_cache,
@@ -339,6 +468,8 @@ def dispatch(args, parser):
     if args.template_rm:
         templates.delete(args.template_rm)
         return 0
+    if args.import_file:
+        return cmd_import(args)
     if args.new:
         return cmd_new(args)
 
@@ -401,6 +532,55 @@ def dispatch(args, parser):
     if args.snap_rm:
         disk.snapshot_delete(machine.disk, args.snap_rm)
         return 0
+    if args.export:
+        return cmd_export(args, machine)
+    if args.open:
+        subprocess.Popen(["xdg-open", str(machine.path)],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return 0
+    if args.ssh_into:
+        return cmd_ssh(args, machine)
+    if args.screenshot:
+        return cmd_screenshot(args, machine)
+    if args.pause:
+        run.pause(machine)
+        say(args, "zamrozone")
+        return 0
+    if args.resume:
+        run.resume(machine)
+        say(args, "odmrozone")
+        return 0
+    if args.reset:
+        run.reset(machine)
+        return 0
+    if args.cd:
+        run.change_cd(machine, iso.find_cached(args.cd))
+        say(args, "plyta wlozona")
+        return 0
+    if args.eject:
+        run.eject_cd(machine)
+        say(args, "plyta wyjeta")
+        return 0
+    if args.save_state:
+        run.save_state(machine, args.save_state)
+        say(args, f"stan '{args.save_state}' zapisany razem z pamiecia")
+        return 0
+    if args.load_state:
+        run.load_state(machine, args.load_state)
+        say(args, f"wczytane: {args.load_state}")
+        return 0
+    if args.disk_rm:
+        index = args.disk_rm - 1
+        if not 0 <= index < len(config.extra_disks):
+            raise BladWirtualki(f"nie ma dolozonego dysku numer {args.disk_rm}")
+        removed = config.extra_disks.pop(index)
+        (machine.path / removed).unlink(missing_ok=True)
+        machine.save()
+        say(args, f"usuniety {removed}")
+        return 0
+    if args.wait and not args.start:
+        run.wait_until_off(machine)
+        return 0
     if args.monitor:
         print(run.monitor(machine, args.monitor).strip())
         return 0
@@ -419,6 +599,7 @@ def dispatch(args, parser):
         return cmd_status(args, machine)
     if args.info:
         return cmd_info(args, machine)
-    if args.start or args.dry_run or args.no_internet or args.no_iso:
+    if (args.start or args.dry_run or args.no_internet or args.no_iso
+            or args.console or args.fullscreen):
         return cmd_start(args, machine)
     return cmd_info(args, machine)

@@ -47,6 +47,26 @@ def build_parser():
     group.add_argument("--rename", metavar="NOWA", help="zmien nazwe")
     group.add_argument("--edit", action="store_true", help="otworz vm.json w edytorze")
     group.add_argument("--no-start", action="store_true", help="przy --new tylko zrob, nie odpalaj")
+    group.add_argument("--pause", action="store_true", help="zamroz maszyne")
+    group.add_argument("--resume", action="store_true", help="odmroz maszyne")
+    group.add_argument("--reset", action="store_true", help="reset, jak przycisk w obudowie")
+    group.add_argument("--wait", action="store_true", help="czekaj, az maszyna sie wylaczy")
+    group.add_argument("--console", action="store_true",
+                       help="odpal w terminalu zamiast w okienku")
+    group.add_argument("--screenshot", nargs="?", const=True, metavar="PLIK",
+                       help="zrzut ekranu chodzacej maszyny")
+    group.add_argument("--save-state", metavar="NAZWA",
+                       help="zapisz maszyne razem z pamiecia (jak hibernacja)")
+    group.add_argument("--load-state", metavar="NAZWA", help="wczytaj zapisany stan")
+    group.add_argument("--export", metavar="PLIK", help="spakuj maszyne do .tar.gz")
+    group.add_argument("--import", dest="import_file", metavar="PLIK",
+                       help="wypakuj maszyne z .tar.gz")
+    group.add_argument("--open", action="store_true", help="otworz folder maszyny")
+    group.add_argument("--note", metavar="TEKST", help="dopisek, po co ta maszyna jest")
+    group.add_argument("--all-stop", action="store_true", help="wylacz wszystkie maszyny")
+    group.add_argument("--running", action="store_true", help="pokaz tylko chodzace")
+    group.add_argument("--doctor", action="store_true",
+                       help="sprawdz, czy komputer jest gotowy na maszyny wirtualne")
     group.add_argument("--once", action="store_true", help="ustawienia tylko na ten jeden raz")
 
     group = parser.add_argument_group("systemy i ISO")
@@ -79,6 +99,22 @@ def build_parser():
     group.add_argument("--bios", dest="firmware", action="store_const", const="bios")
     group.add_argument("--secure-boot", dest="secureboot", action="store_true", default=None)
     group.add_argument("--no-secure-boot", dest="secureboot", action="store_false")
+    group.add_argument("--temporary", "--na-chwile", dest="temporary", action="store_true",
+                       default=None, help="zmiany na dysku znikaja po wylaczeniu")
+    group.add_argument("--no-temporary", dest="temporary", action="store_false")
+    group.add_argument("--fast-disk", dest="fast_disk", action="store_true", default=None,
+                       help="szybszy zapis, ale przy zaniku pradu dysk moze paść")
+    group.add_argument("--no-fast-disk", dest="fast_disk", action="store_false")
+    group.add_argument("--nested", dest="nested", action="store_true", default=None,
+                       help="maszyna wirtualna w maszynie wirtualnej")
+    group.add_argument("--no-nested", dest="nested", action="store_false")
+    group.add_argument("--pin", metavar="RDZENIE", help="np. 0-3, przypisz konkretne rdzenie")
+    group.add_argument("--nice", type=int, metavar="N",
+                       help="priorytet, od -20 do 19 (wyzej = mniej przeszkadza)")
+    group.add_argument("--keyboard", metavar="UKLAD", help="np. pl")
+    group.add_argument("--rtc", choices=("localtime", "utc"), help="zegar maszyny")
+    group.add_argument("--sound-model", choices=("hda", "ac97", "es1370"))
+    group.add_argument("--disk-rm", type=int, metavar="N", help="usun dolozony dysk numer N")
     group.add_argument("--tpm", dest="tpm", action="store_true", default=None,
                        help="wirtualny TPM (Windows 11)")
     group.add_argument("--no-tpm", dest="tpm", action="store_false")
@@ -92,6 +128,12 @@ def build_parser():
     group.add_argument("-r", "--resolution", metavar="WxH", help="np. 1600x900")
     group.add_argument("--headless", action="store_true", help="bez okna")
     group.add_argument("--vnc", type=int, metavar="N", help="podglad przez VNC na :N")
+    group.add_argument("--fit", dest="fit", action="store_true", default=None,
+                       help="dopasuj obraz do okna")
+    group.add_argument("--no-fit", dest="fit", action="store_false")
+    group.add_argument("--fullscreen", action="store_true",
+                       help="pelny ekran (wyjscie: ctrl+alt+f)")
+    group.add_argument("--screens", type=int, metavar="N", help="ile ekranow (1-4)")
     group.add_argument("--audio", dest="audio", action="store_true", default=None)
     group.add_argument("--no-audio", dest="audio", action="store_false")
 
@@ -102,6 +144,12 @@ def build_parser():
     group.add_argument("--no-ports", action="store_true", help="skasuj przekierowania")
     group.add_argument("--ssh", action="store_true", help="skrot na --port 2222:22")
     group.add_argument("--mac", metavar="ADRES")
+    group.add_argument("--dns", metavar="IP", help="wlasny serwer DNS w maszynie")
+    group.add_argument("--hostname", metavar="NAZWA", help="nazwa maszyny widziana w sieci")
+    group.add_argument("--port-udp", action="append", metavar="HOST:GOSC", default=[])
+    group.add_argument("--ssh-into", action="store_true", help="polacz sie po ssh")
+    group.add_argument("--cd", metavar="PLIK", help="wloz plyte (mozna na zywo)")
+    group.add_argument("--eject", action="store_true", help="wyjmij plyte na zywo")
 
     group = parser.add_argument_group("foldery i usb")
     group.add_argument("--share", action="append", metavar="FOLDER", default=[])

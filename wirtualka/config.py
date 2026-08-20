@@ -29,6 +29,9 @@ class VmConfig:
     resolution: str = ""
     net: str = DEFAULTS["net"]
     ports: list = field(default_factory=list)
+    ports_udp: list = field(default_factory=list)
+    dns: str = ""
+    hostname: str = ""
     mac: str = ""
     audio: bool = DEFAULTS["audio"]
     clipboard: bool = DEFAULTS["clipboard"]
@@ -41,6 +44,16 @@ class VmConfig:
     shares: list = field(default_factory=list)
     usb: list = field(default_factory=list)
     boot: str = "auto"
+    temporary: bool = False
+    fast_disk: bool = False
+    nested: bool = False
+    pin: str = ""
+    nice: int = 0
+    keyboard: str = ""
+    rtc: str = "localtime"
+    sound_model: str = "hda"
+    fit: bool = True
+    screens: int = 1
     vnc: int = 0
     note: str = ""
 
@@ -58,7 +71,15 @@ class VmConfig:
         ):
             if value not in allowed:
                 raise BladWirtualki(f"{label}: '{value}' - moze byc: {', '.join(allowed)}")
-        if len(self.ports) > MAX_PORTS:
+        if self.rtc not in ("localtime", "utc"):
+            raise BladWirtualki(f"--rtc: '{self.rtc}' - moze byc localtime albo utc")
+        if self.sound_model not in ("hda", "ac97", "es1370"):
+            raise BladWirtualki(f"--sound-model: '{self.sound_model}'")
+        if not 1 <= self.screens <= 4:
+            raise BladWirtualki("liczba ekranow: od 1 do 4")
+        if not -20 <= self.nice <= 19:
+            raise BladWirtualki("--nice: od -20 do 19")
+        if len(self.ports) + len(self.ports_udp) > MAX_PORTS:
             raise BladWirtualki(f"za duzo przekierowanych portow (max {MAX_PORTS})")
         if len(self.shares) > MAX_SHARES:
             raise BladWirtualki(f"za duzo folderow (max {MAX_SHARES})")

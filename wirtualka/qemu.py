@@ -27,8 +27,8 @@ def _firmware(machine, args):
     args += ["-drive", f"if=pflash,format=raw,file={machine.nvram}"]
 
 
-def _disk(args, path, index, bus, discard):
-    options = [f"file={path}", "if=none", f"id=hd{index}", "format=qcow2", "cache=writeback"]
+def _disk(args, path, index, bus, discard, cache="writeback"):
+    options = [f"file={path}", "if=none", f"id=hd{index}", "format=qcow2", f"cache={cache}"]
     if discard:
         options.append("discard=unmap")
     args += ["-drive", ",".join(options)]
@@ -49,7 +49,7 @@ def _video(args, config):
         if config.resolution else ""
     if config.gpu == "virtio":
         device = "virtio-vga-gl" if config.accel3d else "virtio-vga"
-        parts = [device, "max_outputs=1"]
+        parts = [device, f"max_outputs={config.screens}"]
         if size:
             parts.append(size)
         args += ["-device", ",".join(parts)]
@@ -69,8 +69,12 @@ def _display(args, config):
     elif config.display == "curses":
         args += ["-display", "curses"]
     else:
-        suffix = ",gl=on" if config.accel3d else ""
-        args += ["-display", config.display + suffix]
+        options = [config.display]
+        if config.accel3d:
+            options.append("gl=on")
+        if config.fit and config.display == "gtk":
+            options.append("zoom-to-fit=on")
+        args += ["-display", ",".join(options)]
     if config.vnc:
         args += ["-vnc", f":{config.vnc}"]
 
@@ -80,8 +84,14 @@ def _network(args, config):
         args += ["-nic", "none"]
         return
     netdev = ["user", "id=net0"]
+    if config.dns:
+        netdev.append(f"dns={config.dns}")
+    if config.hostname:
+        netdev.append(f"hostname={config.hostname}")
     for host, guest in config.ports:
         netdev.append(f"hostfwd=tcp::{host}-:{guest}")
+    for host, guest in config.ports_udp:
+        netdev.append(f"hostfwd=udp::{host}-:{guest}")
     args += ["-netdev", ",".join(netdev)]
     device = "virtio-net-pci,netdev=net0"
     if config.mac:
@@ -114,29 +124,38 @@ def _tpm(args, machine):
     args += ["-device", "tpm-tis,tpmdev=tpm0"]
 
 
-def build(machine, iso=None, boot=None):
+def build(machine, iso=None, boot=None, console=False, fullscreen=False):
     config = machine.config
     config.validate()
     args = [QEMU, "-name", f"{config.name},process=wirtualka-{config.name}"]
 
     accel = ",accel=kvm" if config.kvm else ""
     args += ["-machine", config.machine + accel]
-    args += ["-cpu", config.cpu_model if config.kvm else "qemu64"]
+    cpu = config.cpu_model if config.kvm else "qemu64"
+    if config.nested and config.kvm:
+        cpu += ",+vmx"
+    args += ["-cpu", cpu]
     args += ["-smp", str(config.cpus)]
     args += ["-m", str(config.ram_mb)]
     if config.balloon:
         # free-page-reporting hands unused guest RAM straight back to the host
         args += ["-device", "virtio-balloon,free-page-reporting=on"]
     args += ["-device", "virtio-rng-pci"]
-    args += ["-rtc", "base=localtime"]
+    args += ["-rtc", f"base={config.rtc}"]
+    if config.keyboard:
+        args += ["-k", config.keyboard]
+    if config.temporary:
+        # wszystkie zmiany na dysku znikaja po wylaczeniu
+        args += ["-snapshot"]
 
     _firmware(machine, args)
 
+    cache = "unsafe" if config.fast_disk else "writeback"
     disk_path = machine.path / DISK_NAME
     if disk_path.exists():
-        _disk(args, disk_path, 0, config.bus, config.discard)
+        _disk(args, disk_path, 0, config.bus, config.discard, cache)
     for index, extra in enumerate(config.extra_disks, start=1):
-        _disk(args, machine.path / extra, index, config.bus, config.discard)
+        _disk(args, machine.path / extra, index, config.bus, config.discard, cache)
 
     if iso:
         args += ["-drive", f"file={iso},media=cdrom,readonly=on"]
@@ -149,14 +168,19 @@ def build(machine, iso=None, boot=None):
     elif order == "menu":
         args += ["-boot", "menu=on,splash-time=3000"]
 
-    _video(args, config)
-    _display(args, config)
+    if console:
+        args += ["-display", "none", "-serial", "mon:stdio", "-vga", "none"]
+    else:
+        _video(args, config)
+        _display(args, config)
+        if fullscreen:
+            args += ["-full-screen"]
     _network(args, config)
     _shares(args, config)
     _usb(args, config)
 
-    if config.audio:
-        args += ["-audio", "driver=pipewire,model=hda"]
+    if config.audio and not console:
+        args += ["-audio", f"driver=pipewire,model={config.sound_model}"]
     if config.clipboard and config.display in ("gtk", "spice"):
         args += ["-device", "virtio-serial-pci"]
         args += ["-chardev", "qemu-vdagent,id=vdagent,name=vdagent,clipboard=on"]

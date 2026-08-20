@@ -62,7 +62,7 @@ wirtualka cachyos --no-iso          po instalacji: startuj z dysku, nie z plyty
 wirtualka --list                    co mam
 wirtualka --usage                   ile to zajmuje miejsca
 wirtualka cachyos --rm              skasuj
-wirtualka -h                        wszystkie opcje (jest ich ponad 80)
+wirtualka -h                        wszystkie opcje (jest ich ponad 120)
 ```
 
 Podpowiadanie w **fish** dziala od razu — nazwy maszyn i systemow tez.
@@ -89,14 +89,33 @@ To byl caly punkt tego programu:
 - **Miejsce tez wraca.** `discard=unmap` — kasujesz cos w maszynie, plik na dysku chudnie.
 - **ISO pobiera sie dopiero wtedy, kiedy o nie poprosisz** (i wznawia sie po zerwaniu).
 
+## Sztuczki, ktore ratuja tylek
+
+```
+wirtualka --doctor                 sprawdza, czy komputer jest gotowy (KVM, qemu, UEFI, miejsce)
+wirtualka arch --temporary         zmiany na dysku znikaja po wylaczeniu - idealne do testow
+wirtualka arch --console           caly system w terminalu, bez okienka
+wirtualka arch --save-state przed  zapisuje maszyne razem z pamiecia, jak hibernacja
+wirtualka arch --load-state przed  i wraca dokladnie tam, gdzie bylo
+wirtualka arch --screenshot        zrzut ekranu chodzacej maszyny
+wirtualka --all-stop               wylacza wszystko naraz
+wirtualka --running                co teraz chodzi i ile je
+wirtualka arch --export arch.tar.gz    spakuj maszyne i przenies na inny komputer
+wirtualka --import arch.tar.gz         i wypakuj ja tam
+wirtualka arch --pin 0-3 --nice 10     zeby maszyna nie przeszkadzala w graniu
+wirtualka arch --ssh-into              wejdz po ssh do srodka
+```
+
 ## Co jeszcze umie
 
 Kopie stanu (`--snap`, `--snap-back`), lekkie klony (`--clone` — kopia zajmuje
 tylko to, co sie rozni), wspoldzielone foldery (`--share`), przekierowanie portow
 (`--port 2222:22`, `--ssh`), przepuszczanie USB (`--usb`), TPM i Secure Boot dla
 Windowsa 11, przyspieszenie 3D (`--3d`), tryb bez ekranu (`--headless`), VNC,
-szablony ustawien (`--save-template`) i `--dry-run`, jesli chcesz zobaczyc,
-jaka komende QEMU to wygeneruje.
+szablony ustawien (`--save-template`), zamrazanie (`--pause`/`--resume`),
+wkladanie plyty na zywo (`--cd`), wlasny DNS i nazwe w sieci, uklad klawiatury,
+zegar UTC albo lokalny, kilka ekranow naraz, wirtualizacje w wirtualizacji
+(`--nested`) i `--dry-run`, jesli chcesz zobaczyc, jaka komende QEMU to wygeneruje.
 
 ## Testy
 

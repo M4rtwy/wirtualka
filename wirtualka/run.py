@@ -2,6 +2,7 @@
 
 import os
 import re
+import shutil
 import signal
 import socket
 import subprocess
@@ -102,7 +103,16 @@ def _start_swtpm(machine):
     raise BladWirtualki("swtpm sie nie odpalil")
 
 
-def start(machine, iso=None, boot=None, foreground=False):
+def prefix(config):
+    parts = []
+    if config.nice:
+        parts += [need_binary("nice"), "-n", str(config.nice)]
+    if config.pin:
+        parts += [need_binary("taskset"), "-c", config.pin]
+    return parts
+
+
+def start(machine, iso=None, boot=None, foreground=False, console=False, fullscreen=False):
     if is_running(machine):
         raise Running(f"'{machine.name}' juz chodzi (pid {pid_of(machine)})")
     need_binary(QEMU)
@@ -111,10 +121,11 @@ def start(machine, iso=None, boot=None, foreground=False):
     if machine.config.tpm:
         _start_swtpm(machine)
 
-    command = qemu.build(machine, iso=iso, boot=boot)
+    command = prefix(machine.config) + qemu.build(
+        machine, iso=iso, boot=boot, console=console, fullscreen=fullscreen)
     machine.monitor.unlink(missing_ok=True)
 
-    if foreground:
+    if foreground or console:
         return subprocess.call(command)
 
     with open(machine.log_file, "ab") as log:
@@ -157,3 +168,69 @@ def stop(machine, force=False, timeout=STOP_TIMEOUT):
     machine.pid_file.unlink(missing_ok=True)
     machine.monitor.unlink(missing_ok=True)
     return True
+
+
+def pause(machine):
+    return monitor(machine, "stop")
+
+
+def resume(machine):
+    return monitor(machine, "cont")
+
+
+def reset(machine):
+    return monitor(machine, "system_reset")
+
+
+def change_cd(machine, path):
+    return monitor(machine, f'change ide1-cd0 "{path}"')
+
+
+def eject_cd(machine):
+    return monitor(machine, "eject -f ide1-cd0")
+
+
+def save_state(machine, name):
+    answer = monitor(machine, f"savevm {name}")
+    if "Error" in answer:
+        raise BladWirtualki(answer.strip())
+    return answer
+
+
+def load_state(machine, name):
+    answer = monitor(machine, f"loadvm {name}")
+    if "Error" in answer:
+        raise BladWirtualki(answer.strip())
+    return answer
+
+
+def screenshot(machine, path):
+    """qemu zapisuje tylko PPM, wiec potem probujemy przerobic to na PNG."""
+    raw = path.with_suffix(".ppm")
+    monitor(machine, f'screendump "{raw}"')
+    for _ in range(20):
+        if raw.exists() and raw.stat().st_size:
+            break
+        time.sleep(0.25)
+    if not raw.exists():
+        raise BladWirtualki("nie udalo sie zrobic zrzutu")
+    if path.suffix == ".png" and shutil.which("magick"):
+        subprocess.run([shutil.which("magick"), str(raw), str(path)], check=False)
+        if path.exists():
+            raw.unlink(missing_ok=True)
+            return path
+    return raw
+
+
+def wait_until_off(machine, timeout=None):
+    waited = 0
+    while is_running(machine):
+        time.sleep(1)
+        waited += 1
+        if timeout and waited > timeout:
+            return False
+    return True
+
+
+def running_machines(machines):
+    return [machine for machine in machines if is_running(machine)]
