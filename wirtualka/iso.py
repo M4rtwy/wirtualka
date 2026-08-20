@@ -53,9 +53,9 @@ def _progress(done, total, started):
     sys.stderr.flush()
 
 
-def download(url, quiet=False, on_progress=None):
+def download(url, quiet=False, on_progress=None, dest=None):
     ISO_DIR.mkdir(parents=True, exist_ok=True)
-    dest = path_for(url)
+    dest = dest or path_for(url)
     if dest.exists():
         return dest
 
@@ -95,12 +95,14 @@ def download(url, quiet=False, on_progress=None):
 def ensure(slug, quiet=False, on_progress=None):
     distro = catalog.get(slug)
     url = catalog.resolve(distro)
-    dest = path_for(url)
+    # niektore serwery daja plik o nazwie latest.iso - wtedy nazywamy go sami
+    override = distro.source.get("filename")
+    dest = ISO_DIR / override if override else path_for(url)
     if dest.exists():
         return dest
     if not quiet:
         print(f"pobieram {distro.name}: {url}")
-    return download(url, quiet=quiet, on_progress=on_progress)
+    return download(url, quiet=quiet, on_progress=on_progress, dest=dest)
 
 
 def remove(text):

@@ -32,18 +32,6 @@ CATALOG = (
         "dir_pattern": r"\d{6}/",
         "pattern": r"cachyos-desktop-linux-\d+\.iso",
     }, ram="6G", disk="60G"),
-    Distro("cachyos-kde", "CachyOS KDE", {
-        "type": "index",
-        "url": "https://cdn.cachyos.org/ISO/kde/",
-        "dir_pattern": r"\d{6}/",
-        "pattern": r"cachyos-kde-linux-\d+\.iso",
-    }, ram="6G", disk="60G"),
-    Distro("cachyos-cli", "CachyOS CLI", {
-        "type": "index",
-        "url": "https://cdn.cachyos.org/ISO/cli/",
-        "dir_pattern": r"\d{6}/",
-        "pattern": r"cachyos-cli-linux-\d+\.iso",
-    }, ram="2G", disk="30G"),
     Distro("cachyos-handheld", "CachyOS Handheld", {
         "type": "index",
         "url": "https://cdn.cachyos.org/ISO/handheld/",
@@ -112,6 +100,111 @@ CATALOG = (
         "pattern": r"Nyarch-KDE-[\d.]+\.iso",
         "suffix": "/download",
     }, ram="6G", disk="50G", note="Arch dla weeaboo"),
+    Distro("endeavouros", "EndeavourOS", {
+        "type": "index",
+        "url": "https://mirror.moson.org/endeavouros/iso/",
+        "pattern": r"EndeavourOS_[\w.-]+\.iso",
+    }, ram="4G", disk="40G"),
+    Distro("garuda", "Garuda dr460nized", {
+        "type": "direct",
+        "url": "https://iso.builds.garudalinux.org/iso/latest/garuda/dr460nized/latest.iso",
+        "filename": "garuda-dr460nized-latest.iso",
+    }, ram="6G", disk="60G"),
+    Distro("archcraft", "Archcraft", {
+        "type": "index",
+        "url": "https://sourceforge.net/projects/archcraft/files/",
+        "pattern": r"archcraft-[\w.-]+-x86_64\.iso",
+        "suffix": "/download",
+    }, ram="4G", disk="40G", note="rice prosto z pudelka"),
+    Distro("artix", "Artix (bez systemd)", {
+        "type": "index",
+        "url": "https://iso.artixlinux.org/iso/",
+        "pattern": r"artix-base-openrc-\d+-x86_64\.iso",
+    }, ram="2G", disk="25G"),
+    Distro("void", "Void Linux", {
+        "type": "index",
+        "url": "https://repo-default.voidlinux.org/live/current/",
+        "pattern": r"void-live-x86_64-[\d.]+-base\.iso",
+    }, ram="2G", disk="25G"),
+    Distro("bazzite", "Bazzite (do grania)", {
+        "type": "direct",
+        "url": "https://download.bazzite.gg/bazzite-stable-amd64.iso",
+    }, ram="8G", disk="80G", note="Fedora pod gry i handheldy"),
+    Distro("mx", "MX Linux Xfce", {
+        "type": "rss",
+        "url": "https://sourceforge.net/projects/mx-linux/rss?path=/",
+        "pattern": r"https://sourceforge\.net/projects/mx-linux/files/[^<]*MX-\d+_Xfce_x64\.iso/download",
+    }, ram="3G", disk="30G"),
+    Distro("devuan", "Devuan (bez systemd)", {
+        "type": "index",
+        "url": "https://files.devuan.org/devuan_daedalus/installer-iso/",
+        "pattern": r"devuan_daedalus_[\d.]+_amd64_desktop\.iso",
+    }, ram="2G", disk="25G"),
+    Distro("kubuntu", "Kubuntu", {
+        "type": "index",
+        "url": "https://cdimage.ubuntu.com/kubuntu/releases/24.04/release/",
+        "pattern": r"kubuntu-[\d.]+-desktop-amd64\.iso",
+    }, ram="4G", disk="40G"),
+    Distro("lubuntu", "Lubuntu (lekkie)", {
+        "type": "index",
+        "url": "https://cdimage.ubuntu.com/lubuntu/releases/24.04/release/",
+        "pattern": r"lubuntu-[\d.]+-desktop-amd64\.iso",
+    }, ram="2G", disk="25G"),
+    Distro("xubuntu", "Xubuntu", {
+        "type": "index",
+        "url": "https://cdimage.ubuntu.com/xubuntu/releases/24.04/release/",
+        "pattern": r"xubuntu-[\d.]+-desktop-amd64\.iso",
+    }, ram="3G", disk="30G"),
+    Distro("ubuntu-server", "Ubuntu Server", {
+        "type": "index",
+        "url": "https://releases.ubuntu.com/24.04/",
+        "pattern": r"ubuntu-[\d.]+-live-server-amd64\.iso",
+    }, ram="2G", disk="25G"),
+    Distro("debian-live", "Debian Live GNOME", {
+        "type": "index",
+        "url": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/",
+        "pattern": r"debian-live-[\d.]+-amd64-gnome\.iso",
+    }, ram="4G", disk="30G"),
+    Distro("fedora-kde", "Fedora KDE", {
+        "type": "index",
+        "url": "https://dl.fedoraproject.org/pub/fedora/linux/releases/",
+        "dir_pattern": r"\d{2}/",
+        "subpath": "KDE/x86_64/iso/",
+        "pattern": r"Fedora-KDE-Desktop-Live-[\w.-]+\.iso",
+    }, ram="4G", disk="40G"),
+    Distro("rocky", "Rocky Linux", {
+        "type": "index",
+        "url": "https://download.rockylinux.org/pub/rocky/9/isos/x86_64/",
+        "pattern": r"Rocky-9[\d.]*-x86_64-minimal\.iso",
+    }, ram="2G", disk="25G", note="serwerowa, jak RHEL"),
+    Distro("alma", "AlmaLinux", {
+        "type": "index",
+        "url": "https://repo.almalinux.org/almalinux/9/isos/x86_64/",
+        "pattern": r"AlmaLinux-9[\d.]*-x86_64-minimal\.iso",
+    }, ram="2G", disk="25G", note="serwerowa, jak RHEL"),
+    Distro("freebsd", "FreeBSD", {
+        "type": "index",
+        "url": "https://download.freebsd.org/releases/amd64/amd64/ISO-IMAGES/",
+        "dir_pattern": r"\d+\.\d+/",
+        "pattern": r"FreeBSD-[\d.]+-RELEASE-amd64-disc1\.iso",
+    }, ram="2G", disk="25G", note="to nie jest Linux"),
+    Distro("systemrescue", "SystemRescue", {
+        "type": "index",
+        "url": "https://sourceforge.net/projects/systemrescuecd/files/sysresccd-x86/",
+        "pattern": r"systemrescue-[\d.]+-amd64\.iso",
+        "suffix": "/download",
+    }, ram="2G", disk="10G", note="ratunkowa, nie instaluje sie"),
+    Distro("gparted", "GParted Live", {
+        "type": "index",
+        "url": "https://sourceforge.net/projects/gparted/files/gparted-live-stable/",
+        "pattern": r"gparted-live-[\w.-]+-amd64\.iso",
+        "suffix": "/download",
+    }, ram="1G", disk="10G", note="do dzielenia dyskow"),
+    Distro("clonezilla", "Clonezilla Live", {
+        "type": "rss",
+        "url": "https://sourceforge.net/projects/clonezilla/rss?path=/clonezilla_live_stable",
+        "pattern": r"https://sourceforge\.net/projects/clonezilla/files/[^<]*clonezilla-live-[\w.-]+-amd64\.iso/download",
+    }, ram="1G", disk="10G", note="do klonowania dyskow"),
     Distro("kali", "Kali Linux", {
         "type": "index",
         "url": "https://cdimage.kali.org/current/",
@@ -159,6 +252,12 @@ def resolve(distro):
         raise BladWirtualki(source.get("info", "trzeba pobrac ISO recznie"))
     if kind == "direct":
         return source["url"]
+    if kind == "rss":
+        # sourceforge nie ma zwyklego listingu, ale wystawia kanal RSS z pelnymi linkami
+        links = re.findall(source["pattern"], _fetch(source["url"]))
+        if not links:
+            raise BladWirtualki("nie znalazlem zadnego pliku w kanale RSS")
+        return sorted(set(links), key=_natural_key)[-1]
 
     base = source["url"]
     if source.get("dir_pattern"):

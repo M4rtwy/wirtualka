@@ -186,6 +186,15 @@ class Catalog(unittest.TestCase):
         with self.assertRaises(NotFound):
             catalog.get("temple-os")
 
+    def test_every_source_is_usable(self):
+        for distro in catalog.CATALOG:
+            source = distro.source
+            self.assertIn(source.get("type"), ("direct", "index", "rss", "manual"), distro.slug)
+            if source["type"] in ("index", "rss"):
+                self.assertTrue(source.get("pattern"), distro.slug)
+            if source["type"] != "manual":
+                self.assertTrue(source.get("url", "").startswith("https://"), distro.slug)
+
     def test_sourceforge_name(self):
         url = "https://sourceforge.net/projects/nyarchlinux/files/Nyarch-Gnome-26.04.iso/download"
         self.assertEqual(iso.path_for(url).name, "Nyarch-Gnome-26.04.iso")

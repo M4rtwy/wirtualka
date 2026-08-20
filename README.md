@@ -69,10 +69,18 @@ Podpowiadanie w **fish** dziala od razu — nazwy maszyn i systemow tez.
 
 ## Systemy, ktore pobiera sam
 
-`cachyos` `cachyos-kde` `cachyos-cli` `cachyos-handheld` `arch` `debian` `fedora`
-`ubuntu` `mint` `nixos` `opensuse` `alpine` `gentoo` `gentoo-gui` `kali`
-`nyarch` `nyarch-kde` (ten memowy Arch dla weeaboo)
-oraz `windows` (tu musisz dac wlasne ISO, Microsoft nie daje stalego linku).
+**Zwykle:** `cachyos` `cachyos-handheld` `arch` `endeavouros` `artix` `debian`
+`debian-live` `devuan` `fedora` `fedora-kde` `ubuntu` `ubuntu-server` `kubuntu`
+`lubuntu` `xubuntu` `mint` `mx` `nixos` `opensuse` `alpine` `void` `gentoo`
+`gentoo-gui` `rocky` `alma` `freebsd`
+
+**Do grania i do rice'a:** `bazzite` `garuda` `archcraft` `nyarch` `nyarch-kde`
+
+**Ratunkowe (nie instaluja sie, odpalaja z plyty):** `systemrescue` `gparted` `clonezilla`
+
+**Bezpieczenstwo:** `kali`
+
+**Wlasne ISO:** `windows` (Microsoft nie daje stalego linku)
 
 Nie ma tu zadnych linkow z wpisanym na sztywno numerem wersji — program wchodzi
 na serwer i bierze najnowszy plik. Wlasne ISO tez mozesz podac: `--iso plik.iso`.
