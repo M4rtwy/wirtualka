@@ -1,5 +1,4 @@
-"""qcow2 handling. Images are sparse, so a 60G disk costs almost nothing
-until the guest actually writes to it."""
+"""qcow2 disks. Sparse, so a 60G image costs almost nothing until written to."""
 
 import json
 import subprocess
@@ -65,6 +64,5 @@ def snapshot_delete(path, name):
 
 
 def link_clone(source, dest):
-    """Copy-on-write clone: the new disk only stores what changes."""
     fmt = info(source).get("format", "qcow2")
     _run("create", "-f", "qcow2", "-b", str(source), "-F", fmt, str(dest))

@@ -1,4 +1,4 @@
-"""Paths, defaults and hard limits. Nothing here touches the disk."""
+"""Paths, defaults and limits. Nothing here touches the disk."""
 
 import os
 import re

@@ -26,7 +26,6 @@ def path_for(url):
 
 
 def find_cached(text):
-    """Accept a real path, an exact cached name, or a fragment of one."""
     direct = Path(text).expanduser()
     if direct.is_file():
         return direct.resolve()
@@ -92,7 +91,6 @@ def download(url, quiet=False, on_progress=None):
 
 
 def ensure(slug, quiet=False, on_progress=None):
-    """Give back a local ISO for a catalog slug, downloading it if needed."""
     distro = catalog.get(slug)
     url = catalog.resolve(distro)
     dest = path_for(url)

@@ -1,4 +1,4 @@
-"""Named presets: settings you liked, reused when making the next machine."""
+"""Named presets, reused when making the next machine."""
 
 import json
 

@@ -1,5 +1,4 @@
-"""Starting and stopping machines. There is no daemon: a stopped machine
-is just a folder with a qcow2 file in it."""
+"""Starting and stopping machines. No daemon: a stopped machine is just a folder."""
 
 import os
 import re

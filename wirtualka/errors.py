@@ -1,5 +1,6 @@
+# Anything the user got wrong, or any state we refuse to touch.
 class BladWirtualki(Exception):
-    """Anything the user did wrong, or any state we refuse to touch."""
+    pass
 
 
 class NotFound(BladWirtualki):

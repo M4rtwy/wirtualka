@@ -155,7 +155,6 @@ class Window(Adw.ApplicationWindow):
         self.reload()
         GLib.timeout_add_seconds(3, self._tick)
 
-    # ---------- sidebar ----------
 
     def _sidebar(self):
         header = Adw.HeaderBar()
@@ -221,7 +220,6 @@ class Window(Adw.ApplicationWindow):
     def fail(self, error):
         self.toast(str(error) if isinstance(error, BladWirtualki) else f"cos poszlo nie tak: {error}")
 
-    # ---------- details ----------
 
     def show_empty(self):
         self.selected = None
@@ -397,7 +395,6 @@ class Window(Adw.ApplicationWindow):
                 self.fail(error)
         return changed
 
-    # ---------- actions ----------
 
     def on_new(self, *_):
         NewMachineDialog(self.create_machine).present(self)

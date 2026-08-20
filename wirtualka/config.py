@@ -1,4 +1,4 @@
-"""The on-disk description of one machine (vm.json)."""
+"""One machine as stored in vm.json."""
 
 import json
 from dataclasses import asdict, dataclass, field, fields

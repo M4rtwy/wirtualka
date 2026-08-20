@@ -1,8 +1,5 @@
-"""Which systems `wirtualka` can fetch, and how to find their newest ISO.
-
-Distro sites almost never publish a stable "latest.iso" link, so most entries
-point at a directory listing and let the resolver pick the newest file.
-"""
+"""Which systems we can fetch. Distro sites rarely publish a stable
+"latest.iso" link, so most entries scrape a directory listing instead."""
 
 import re
 import urllib.request
@@ -143,7 +140,6 @@ def _newest(page, pattern):
 
 
 def resolve(distro):
-    """Return the direct download URL for a distro's newest ISO."""
     source = distro.source
     kind = source.get("type")
 

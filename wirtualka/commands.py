@@ -53,7 +53,6 @@ def tag_for(path):
 
 
 def apply_flags(config, args):
-    """Copy every hardware flag the user typed onto the config."""
     simple = ("cpus", "cpu_model", "machine", "bus", "display", "gpu", "vram",
               "resolution", "mac", "net", "firmware")
     for key in simple:
@@ -98,7 +97,6 @@ def apply_flags(config, args):
     return config.validate()
 
 
-# ---------- listings ----------
 
 def cmd_list(args):
     machines = store.all_machines()
@@ -190,7 +188,6 @@ def cmd_status(args, machine):
     return 0
 
 
-# ---------- lifecycle ----------
 
 def resolve_iso(args, config, quiet):
     if args.iso:
@@ -309,7 +306,6 @@ def cmd_snapshots(args, machine):
     return 0
 
 
-# ---------- dispatch ----------
 
 GLOBAL = {
     "list": cmd_list,
